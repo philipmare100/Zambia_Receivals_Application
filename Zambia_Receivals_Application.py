@@ -117,7 +117,7 @@ if uploaded_file is not None:
                 "Bag Scanned & Manual": "name",
                 "KICO SEAL NO.": "GRN_KICO_SEAL",
                 "MMS BAG SEAL NO": "MMS_SEAL_NO",  # New mapping for MMS BAG SEAL NO
-                "GrossWt": "GRN_WH_GROSS_WEIGHT",
+                "RECEIVING WAREHOUSE PLATFORM SCALE GROSS WEIGHT (KG)": "GRN_WH_GROSS_WEIGHT",
                 "BAG OFFLOADING TIME": "GRN_RECEIVED_DATE",
                 "RECORD BAG CONDITION": "ZAM_GRN_BAG_CONDITION_STATUS",
                 "RECEIVING WAREHOUSE": "GRN_WAREHOUSE_NAME",
