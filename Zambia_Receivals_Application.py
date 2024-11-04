@@ -136,6 +136,11 @@ if uploaded_file is not None:
                 if col not in mapped_df_for_download.columns:
                     mapped_df_for_download[col] = None
 
+            # Add "+02:00" to all time columns in mapped_df_for_download
+            for col in ["GRN_FORM_COMPLETE", "GRN_RECEIVED_DATE"]:  # Specify all columns with time information
+                if col in mapped_df_for_download.columns:
+                    mapped_df_for_download[col] = mapped_df_for_download[col].astype(str) + "+02:00"
+
             # Reorder columns according to column_mappings
             mapped_df_for_download = mapped_df_for_download[column_mappings.values()]
 
