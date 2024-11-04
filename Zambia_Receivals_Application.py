@@ -97,6 +97,18 @@ if uploaded_file is not None:
             st.write("Length Exception Table (Based on 'BAG ID.' Length 16-25):")
             st.dataframe(length_exception_df_filtered)
 
+            # Exception Table 1: Entries with dash in "Bag Scanned & Manual"
+            dash_exception_df = combined_df[combined_df["Bag Scanned & Manual"].str.contains('-', na=False)]
+            dash_exception_df = dash_exception_df[[
+                "Added Time", bag_id_column, "Bag Scanned & Manual", kico_seal_column, mms_seal_column, "Seal", "Lot",
+                receiving_horse_column
+            ]]
+            dash_exception_df = dash_exception_df.sort_values(by="Added Time", ascending=False)
+
+            st.write(f"Total 'Bag Scanned & Manual' Entries Containing Dash '-': {len(dash_exception_df)}")
+            st.write("Dash Exception Table (Based on 'Bag Scanned & Manual' Column):")
+            st.dataframe(dash_exception_df)
+
             # Move Date-Time Picker and Filtered Data Section Below Exceptions
             st.write("Select a date-time range to filter the Combined DataFrame:")
             start_date = st.date_input("Start Date", value=combined_df["Added Time"].min().date())
