@@ -1,9 +1,13 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import pytz
 
 # Streamlit app title
 st.title("Zambia Warehouse Receiving Supervision - Data Extraction and Combined DataFrame")
+
+# South Africa timezone setup
+sa_timezone = pytz.timezone('Africa/Johannesburg')
 
 # File uploader widget
 uploaded_file = st.file_uploader("Choose a file", type=['xlsx'])
@@ -14,9 +18,9 @@ if uploaded_file is not None:
         # Load the data from the "RawData" sheet, skipping the first row (header=1)
         df = pd.read_excel(uploaded_file, sheet_name="RawData", header=1)
 
-        # Ensure "Added Time" is in datetime format
+        # Ensure "Added Time" is in datetime format and localize to South Africa timezone
         if "Added Time" in df.columns:
-            df['Added Time'] = pd.to_datetime(df['Added Time'], errors='coerce')
+            df['Added Time'] = pd.to_datetime(df['Added Time'], errors='coerce').dt.tz_localize('UTC').dt.tz_convert(sa_timezone)
         else:
             st.error("The 'RawData' sheet does not contain an 'Added Time' column.")
             st.stop()
@@ -34,7 +38,6 @@ if uploaded_file is not None:
                 parts = dict(item.split('=') for item in bag_id.split(',') if '=' in item)
                 parts.update({item.split(': ')[0]: item.split(': ')[1] for item in bag_id.split(',') if ': ' in item})
                 return parts
-
 
             # Apply extraction to create new columns from Bag ID details
             bag_info_df = df[bag_id_column].dropna().apply(extract_bag_info).apply(pd.Series)
@@ -113,11 +116,12 @@ if uploaded_file is not None:
             st.write("Select a date-time range to filter the Combined DataFrame:")
             start_date = st.date_input("Start Date", value=combined_df["Added Time"].min().date())
             start_time = st.time_input("Start Time", value=pd.to_datetime("00:00").time())
-            end_date = st.date_input("End Date", value=datetime.now().date())  # Default to current date
-            end_time = st.time_input("End Time", value=datetime.now().time())  # Default to current time
+            end_date = st.date_input("End Date", value=datetime.now(sa_timezone).date())  # Default to SA current date
+            end_time = st.time_input("End Time", value=datetime.now(sa_timezone).time())  # Default to SA current time
 
-            start_datetime = pd.to_datetime(f"{start_date} {start_time}")
-            end_datetime = pd.to_datetime(f"{end_date} {end_time}")
+            # Combine selected date and time into timezone-aware datetime objects
+            start_datetime = sa_timezone.localize(pd.to_datetime(f"{start_date} {start_time}"))
+            end_datetime = sa_timezone.localize(pd.to_datetime(f"{end_date} {end_time}"))
 
             # Slice combined_df based on the selected date-time range
             combined_df_for_download = combined_df[
@@ -171,11 +175,6 @@ if uploaded_file is not None:
                 file_name=file_name,
                 mime="text/csv"
             )
-
-        else:
-            st.error("The file does not contain the required column: 'BAG ID.'")
     except Exception as e:
         st.error(f"Error processing file: {e}")
-else:
-    st.info("Awaiting file upload...")
 
